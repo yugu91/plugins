@@ -406,10 +406,30 @@
   if (!nsUrl) {
     return false;
   }
+    NSRange range = [url rangeOfString:@"file://"];
+    if(range.length > 0){
+        return [self loadFile:url withHeaders:headers];
+    }
   NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:nsUrl];
   [request setAllHTTPHeaderFields:headers];
   [_webView loadRequest:request];
   return true;
+}
+
+-(bool)loadFile:(NSString*)url withHeaders:(NSDictionary<NSString*, NSString*>*)headers{
+    NSURL* nsUrl = [NSURL URLWithString:url];
+    NSArray *arr = [[NSFileManager defaultManager] URLsForDirectory:NSCachesDirectory inDomains:NSUserDomainMask];
+    NSURL *dict = arr[0];
+    if(!nsUrl){
+        return false;
+    }
+    if (@available(iOS 9.0, *)) {
+        [_webView loadFileURL:nsUrl allowingReadAccessToURL:dict];
+    } else {
+        return false;
+        // Fallback on earlier versions
+    }
+    return true;
 }
 
 - (void)registerJavaScriptChannels:(NSSet*)channelNames
